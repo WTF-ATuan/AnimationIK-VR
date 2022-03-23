@@ -1,17 +1,16 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using UnityEngine.Animations.Rigging;
 
 namespace Actor.Scripts{
-	[RequireComponent(typeof(Rigidbody))]
-	public class PhysicsHand : MonoBehaviour{
+	public class IKHand : MonoBehaviour{
 		[SerializeField] private GameObject followObject;
 		[SerializeField] private Vector3 positionOffset;
-		[SerializeField] private float followSpeed = 30f;
 
-
-		private new Rigidbody rigidbody;
+		private TwoBoneIKConstraint boneIKConstraint;
 
 		private void Start(){
-			rigidbody = GetComponent<Rigidbody>();
+			boneIKConstraint = GetComponentInParent<TwoBoneIKConstraint>();
 			var followPosition = followObject.transform.position;
 			positionOffset = transform.position - followPosition;
 			transform.position = followPosition;
@@ -21,7 +20,9 @@ namespace Actor.Scripts{
 			var followPosition = followObject.transform.position + positionOffset;
 			var position = transform.position;
 			var distance = Vector3.Distance(followPosition, position);
-			rigidbody.velocity = (positionOffset - position).normalized * (followSpeed * distance);
+			var lerpPosition = Vector3.Lerp(position, followPosition, 20f * distance * Time.deltaTime);
+			transform.position = lerpPosition;
+			boneIKConstraint.data.tip.transform.position = followPosition;
 		}
 	}
 }
